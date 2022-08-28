@@ -10,6 +10,10 @@ import { UserService } from 'src/user/user.service';
 import { LoginDTO, RegisterDTO } from './dto';
 import { ConfigurationService } from 'src/infra/configuration/configuration.service';
 import { AuthMessages } from './enums';
+import {
+  ISuccessResponse,
+  ResponseFormatter,
+} from 'src/common/utils/ResponseFormatter';
 
 @Injectable()
 export class AuthService {
@@ -19,9 +23,7 @@ export class AuthService {
     private readonly configService: ConfigurationService,
   ) {}
 
-  public async register(
-    registerDTO: RegisterDTO,
-  ): Promise<Record<string, any>> {
+  public async register(registerDTO: RegisterDTO): Promise<ISuccessResponse> {
     const password = await this.hashData(registerDTO.password);
 
     const newUser = await this.userService.createUser({
@@ -34,13 +36,13 @@ export class AuthService {
 
     await this.updateRefreshToken(newUser.id, tokens.refreshToken);
 
-    return {
-      ...newUser,
+    return ResponseFormatter.success({
       tokens,
-    };
+      user: newUser,
+    });
   }
 
-  public async login(loginDTO: LoginDTO): Promise<Record<string, any>> {
+  public async login(loginDTO: LoginDTO): Promise<ISuccessResponse> {
     const user = await this.userService.getUserByEmail(loginDTO.email);
 
     const isValidCredentials = await this.isValidCredentials(
@@ -56,14 +58,16 @@ export class AuthService {
 
     await this.updateLoginDetails(user.id, tokens.refreshToken);
 
-    return {
-      ...user,
+    return ResponseFormatter.success({
       tokens,
-    };
+      user,
+    });
   }
 
-  public async refresh(authData: Record<string, any>): Promise<any> {
-    const user = await this.userService.getUserById(authData?.user);
+  public async refresh(
+    authData: Record<string, any>,
+  ): Promise<ISuccessResponse> {
+    const user = await this.userService.getUserById(authData?.userId);
 
     if (!user || !user.refreshToken) {
       throw new ForbiddenException(AuthMessages.FORBIDDEN);
@@ -82,15 +86,15 @@ export class AuthService {
 
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
-    return tokens;
+    return ResponseFormatter.success(tokens);
   }
 
   public async logout(authData: Record<string, any>): Promise<void> {
-    if (!authData.user) {
+    if (!authData.userId) {
       throw new ForbiddenException(AuthMessages.FORBIDDEN);
     }
 
-    return this.handleLogout(authData.user);
+    return this.handleLogout(authData.userId);
   }
 
   private async isValidCredentials(
@@ -140,7 +144,7 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
-          user: userId,
+          userId,
           email,
         },
         {
@@ -150,7 +154,7 @@ export class AuthService {
       ),
       this.jwtService.signAsync(
         {
-          user: userId,
+          userId,
           email,
         },
         {

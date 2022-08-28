@@ -1,15 +1,11 @@
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
 import { UpdateUserDTO } from './dto';
 import { User } from './repo';
 import { UserService } from './user.service';
 
 @Controller('api/users')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('/')
   public async getUsers(): Promise<User[]> {
