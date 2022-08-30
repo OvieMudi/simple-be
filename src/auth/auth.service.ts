@@ -73,8 +73,6 @@ export class AuthService {
       throw new ForbiddenException(AuthMessages.FORBIDDEN);
     }
 
-    console.log('hashdata', await this.hashData(authData.refreshToken));
-
     const isValidRefreshToken =
       this.createMd5Hash(authData.refreshToken) === user.refreshToken;
 

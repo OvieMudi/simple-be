@@ -7,9 +7,16 @@ import { ProductModule } from './product/product.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './common/guards';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
-  imports: [ConfigurationModule, UserModule, ProductModule, AuthModule],
+  imports: [
+    ConfigurationModule,
+    UserModule,
+    ProductModule,
+    AuthModule,
+    UploadModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
