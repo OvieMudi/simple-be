@@ -2,10 +2,11 @@ import {
   UnauthorizedException,
   Injectable,
   ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcryptjs';
-import { createHash } from 'crypto';
+import { BinaryLike, createHash } from 'crypto';
 import { UserService } from 'src/user/user.service';
 import { LoginDTO, RegisterDTO } from './dto';
 import { ConfigurationService } from 'src/infra/configuration/configuration.service';
@@ -24,22 +25,27 @@ export class AuthService {
   ) {}
 
   public async register(registerDTO: RegisterDTO): Promise<ISuccessResponse> {
-    const password = await this.hashData(registerDTO.password);
+    try {
+      const password = await this.hashData(registerDTO.password);
 
-    const newUser = await this.userService.createUser({
-      email: registerDTO.email,
-      username: registerDTO.username,
-      password,
-    });
+      const newUser = await this.userService.createUser({
+        email: registerDTO.email,
+        username: registerDTO.username,
+        password,
+      });
 
-    const tokens = await this.signToken(newUser.id, newUser.email);
+      const tokens = await this.signToken(newUser.id, newUser.email);
 
-    await this.updateRefreshToken(newUser.id, tokens.refreshToken);
+      await this.updateRefreshToken(newUser.id, tokens.refreshToken);
 
-    return ResponseFormatter.success({
-      tokens,
-      user: newUser,
-    });
+      return ResponseFormatter.success({
+        tokens,
+        user: newUser,
+      });
+    } catch (error) {
+      if (error.name === 'conflict') throw new ConflictException(error.message);
+      throw error;
+    }
   }
 
   public async login(loginDTO: LoginDTO): Promise<ISuccessResponse> {
@@ -102,7 +108,7 @@ export class AuthService {
     return await compare(password, hashedPassword);
   }
 
-  private hashData(input: any): Promise<string> {
+  private hashData(input: string): Promise<string> {
     return hash(input, 10);
   }
 

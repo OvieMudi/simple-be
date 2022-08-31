@@ -16,7 +16,7 @@ export class ProductController {
 
   @Get('/')
   @HttpCode(HttpStatus.OK)
-  public async getProducts(): Promise<any> {
+  public async getProducts() {
     return this.productService.getProducts();
   }
 
@@ -25,7 +25,7 @@ export class ProductController {
   public async createProduct(
     @Body() payload: CreateProductDTO,
     @ExtractToken('userId') userId: string,
-  ): Promise<any> {
+  ) {
     return this.productService.createProduct(userId, payload);
   }
 }

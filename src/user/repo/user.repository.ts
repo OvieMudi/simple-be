@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
+import { CustomError } from 'src/common/utils/CustomError';
 import { UpdateUserDTO } from '../dto';
 import { User } from './user.schema';
 
@@ -17,7 +18,14 @@ export class UserRepository {
   }
 
   public async create(user: Partial<User>): Promise<User> {
-    return this.userModel.create(user);
+    try {
+      return await this.userModel.create(user);
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new CustomError('conflict', 'User with details already exists');
+      }
+      throw error;
+    }
   }
 
   public async update(

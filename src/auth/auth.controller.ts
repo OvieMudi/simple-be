@@ -20,14 +20,14 @@ export class AuthController {
   @Post('register')
   @PublicRoute()
   @HttpCode(HttpStatus.CREATED)
-  public async register(@Body() registerDTO: RegisterDTO): Promise<any> {
+  public async register(@Body() registerDTO: RegisterDTO) {
     return this.authService.register(registerDTO);
   }
 
   @Post('login')
   @PublicRoute()
   @HttpCode(HttpStatus.OK)
-  public async login(@Body() loginDTO: LoginDTO): Promise<any> {
+  public async login(@Body() loginDTO: LoginDTO) {
     return this.authService.login(loginDTO);
   }
 
@@ -35,13 +35,13 @@ export class AuthController {
   @PublicRoute()
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
-  public async refresh(@Req() req: Request): Promise<any> {
+  public async refresh(@Req() req: Request) {
     return this.authService.refresh(req.user);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  public async logout(@Req() req: Request): Promise<any> {
+  public async logout(@Req() req: Request) {
     return this.authService.logout(req.user);
   }
 }

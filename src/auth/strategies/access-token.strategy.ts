@@ -16,7 +16,7 @@ export class AccessTokenStrategy extends PassportStrategy(
     });
   }
 
-  public validate(payload: any): any {
+  public validate(payload: any): Record<string, any> {
     return payload;
   }
 }

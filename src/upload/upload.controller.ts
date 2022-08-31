@@ -18,7 +18,7 @@ export class UploadController {
   @HttpCode(HttpStatus.CREATED)
   public async uploadSingle(
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<any> {
+  ) {
     return this.uploadService.uploadSingleImage(file);
   }
 }
